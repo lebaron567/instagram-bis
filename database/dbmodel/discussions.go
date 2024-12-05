@@ -7,15 +7,16 @@ import (
 )
 
 type Discussion struct {
-	ID       uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	Name     string    `gorm:"size:255;not null" json:"name_discussion"`
-	Messages []Message `gorm:"foreignKey:DiscussionID" json:"messages"`
+	gorm.Model
+	Name      string   `json:"name_discussion"`
+	IDMembers int      `json:"id_members"`
+	Members   []Member `gorm:"foreignKey:IDDiscussion;references:IDDiscussion;constraint:OnDelete:CASCADE;"`
 }
 
 type DiscussionRepository interface {
 	Create(discussion *Discussion) (*Discussion, error)
-	FindByID(id uint) (*Discussion, error)
-	FindByUserID(userID uint) ([]*Discussion, error)
+	FindByID(id int) (*Discussion, error)
+	FindByUserID(userID int) ([]*Discussion, error)
 }
 
 type discussionRepository struct {
@@ -33,7 +34,7 @@ func (r *discussionRepository) Create(discussion *Discussion) (*Discussion, erro
 	return discussion, nil
 }
 
-func (r *discussionRepository) FindByUserID(userID uint) ([]*Discussion, error) {
+func (r *discussionRepository) FindByUserID(userID int) ([]*Discussion, error) {
 	var discussions []*Discussion
 	if err := r.db.
 		Joins("JOIN members ON members.discussion_id = discussions.id").
@@ -47,7 +48,7 @@ func (r *discussionRepository) FindByUserID(userID uint) ([]*Discussion, error) 
 	return discussions, nil
 }
 
-func (r *discussionRepository) FindByID(id uint) (*Discussion, error) {
+func (r *discussionRepository) FindByID(id int) (*Discussion, error) {
 	var discussion Discussion
 	if err := r.db.First(&discussion, id).Error; err != nil {
 		return nil, err
