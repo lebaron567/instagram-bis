@@ -5,16 +5,18 @@ import (
 )
 
 type Message struct {
-	ID           uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID       uint   `gorm:"not null" json:"id_user"`
-	DiscussionID uint   `gorm:"not null" json:"id_discussion"`
-	Content      string `gorm:"type:text;not null" json:"content_message"`
+	gorm.Model
+	IDUser       int        `json:"id_user"`
+	IDDiscussion int        `json:"id_discussion"`
+	Content      string     `json:"content_message"`
+	User         User       `gorm:"foreignKey:IDUser;references:ID;constraint:OnDelete:CASCADE;"`
+	Discussion   Discussion `gorm:"foreignKey:IDDiscussion;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
 type MessageRepository interface {
 	Create(message *Message) (*Message, error)
-	FindByDiscussionID(discussionID uint) ([]*Message, error)
-	Delete(id uint) error
+	FindByDiscussionID(discussionID int) ([]*Message, error)
+	Delete(id int) error
 }
 
 type messageRepository struct {
@@ -32,7 +34,7 @@ func (r *messageRepository) Create(message *Message) (*Message, error) {
 	return message, nil
 }
 
-func (r *messageRepository) FindByDiscussionID(discussionID uint) ([]*Message, error) {
+func (r *messageRepository) FindByDiscussionID(discussionID int) ([]*Message, error) {
 	var messages []*Message
 	if err := r.db.Where("discussion_id = ?", discussionID).Find(&messages).Error; err != nil {
 		return nil, err
@@ -40,6 +42,6 @@ func (r *messageRepository) FindByDiscussionID(discussionID uint) ([]*Message, e
 	return messages, nil
 }
 
-func (r *messageRepository) Delete(id uint) error {
+func (r *messageRepository) Delete(id int) error {
 	return r.db.Delete(&Message{}, id).Error
 }

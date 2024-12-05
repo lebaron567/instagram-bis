@@ -5,15 +5,17 @@ import (
 )
 
 type Follower struct {
-	UserID     uint `gorm:"not null" json:"id_user"`
-	FollowerID uint `gorm:"not null" json:"id_follower"`
+	gorm.Model
+	IDUser     int  `json:"id_user"`
+	IDFollower int  `json:"id_folower"`
+	User       User `gorm:"foreignKey:IDUser;references:ID;constraint:OnDelete:CASCADE;"`
+	Follower   User `gorm:"foreignKey:IDFollower;references:ID;constraint:OnDelete:CASCADE;"`
 }
-
 type FollowerRepository interface {
 	Follow(follower *Follower) (*Follower, error)
-	Unfollow(userID, followerID uint) error
-	FindFollowersByUserID(userID uint) ([]*Follower, error)
-	FindFollowingByUserID(userID uint) ([]*Follower, error)
+	Unfollow(userID, followerID int) error
+	FindFollowersByUserID(userID int) ([]*Follower, error)
+	FindFollowingByUserID(userID int) ([]*Follower, error)
 }
 
 type followerRepository struct {
@@ -31,11 +33,11 @@ func (r *followerRepository) Follow(follower *Follower) (*Follower, error) {
 	return follower, nil
 }
 
-func (r *followerRepository) Unfollow(userID, followerID uint) error {
+func (r *followerRepository) Unfollow(userID, followerID int) error {
 	return r.db.Where("user_id = ? AND follower_id = ?", userID, followerID).Delete(&Follower{}).Error
 }
 
-func (r *followerRepository) FindFollowersByUserID(userID uint) ([]*Follower, error) {
+func (r *followerRepository) FindFollowersByUserID(userID int) ([]*Follower, error) {
 	var followers []*Follower
 	if err := r.db.Where("id_follower = ?", userID).Find(&followers).Error; err != nil {
 		return nil, err
@@ -43,7 +45,7 @@ func (r *followerRepository) FindFollowersByUserID(userID uint) ([]*Follower, er
 	return followers, nil
 }
 
-func (r *followerRepository) FindFollowingByUserID(userID uint) ([]*Follower, error) {
+func (r *followerRepository) FindFollowingByUserID(userID int) ([]*Follower, error) {
 	var following []*Follower
 	if err := r.db.Where("id_user = ?", userID).Find(&following).Error; err != nil {
 		return nil, err
