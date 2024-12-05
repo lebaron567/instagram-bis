@@ -5,16 +5,18 @@ import (
 )
 
 type Member struct {
-	ID           uint `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID       uint `gorm:"not null" json:"id_user"`
-	DiscussionID uint `gorm:"not null" json:"id_discussion"`
+	gorm.Model
+	IDUser       int        `json:"id_user"`
+	IDDiscussion int        `json:"id_discussion"`
+	User         User       `gorm:"foreignKey:IDUser;references:ID;constraint:OnDelete:CASCADE;"`
+	Discussion   Discussion `gorm:"foreignKey:IDDiscussion;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
 type MemberRepository interface {
 	Add(member *Member) (*Member, error)
-	Remove(userID, discussionID uint) error
-	FindByDiscussionID(discussionID uint) ([]*Member, error)
-	FindByUserID(userID uint) ([]*Member, error)
+	Remove(userID, discussionID int) error
+	FindByDiscussionID(discussionID int) ([]*Member, error)
+	FindByUserID(userID int) ([]*Member, error)
 }
 
 type memberRepository struct {
@@ -32,11 +34,11 @@ func (r *memberRepository) Add(member *Member) (*Member, error) {
 	return member, nil
 }
 
-func (r *memberRepository) Remove(userID, discussionID uint) error {
+func (r *memberRepository) Remove(userID, discussionID int) error {
 	return r.db.Where("user_id = ? AND discussion_id = ?", userID, discussionID).Delete(&Member{}).Error
 }
 
-func (r *memberRepository) FindByDiscussionID(discussionID uint) ([]*Member, error) {
+func (r *memberRepository) FindByDiscussionID(discussionID int) ([]*Member, error) {
 	var members []*Member
 	if err := r.db.Where("discussion_id = ?", discussionID).Find(&members).Error; err != nil {
 		return nil, err
@@ -44,7 +46,7 @@ func (r *memberRepository) FindByDiscussionID(discussionID uint) ([]*Member, err
 	return members, nil
 }
 
-func (r *memberRepository) FindByUserID(userID uint) ([]*Member, error) {
+func (r *memberRepository) FindByUserID(userID int) ([]*Member, error) {
 	var members []*Member
 	if err := r.db.Where("user_id = ?", userID).Find(&members).Error; err != nil {
 		return nil, err

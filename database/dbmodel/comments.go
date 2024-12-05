@@ -7,16 +7,18 @@ import (
 )
 
 type Comment struct {
-	ID      uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID  uint   `gorm:"not null" json:"id_user"`
-	Content string `gorm:"not null" json:"content_comment"`
+	gorm.Model
+	IDUser  int    `json:"id_user"`
+	Content string `json:"content_comment"`
+	User    User   `gorm:"foreignKey:IDUser;references:ID;constraint:OnDelete:CASCADE;"`
+	Post    Post   `gorm:"foreignKey:IDPost;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
 type CommentRepository interface {
 	Create(comment *Comment) (*Comment, error)
-	Delete(commentID uint) error
-	FindByPostID(postID uint) ([]*Comment, error)
-	FindAllByUserID(userID uint) ([]*Comment, error)
+	Delete(commentID int) error
+	FindByPostID(postID int) ([]*Comment, error)
+	FindAllByUserID(userID int) ([]*Comment, error)
 }
 
 type commentRepository struct {
@@ -34,7 +36,7 @@ func (r *commentRepository) Create(comment *Comment) (*Comment, error) {
 	return comment, nil
 }
 
-func (r *commentRepository) Delete(commentID uint) error {
+func (r *commentRepository) Delete(commentID int) error {
 	// Find the comment to ensure it exists
 	var comment Comment
 	if err := r.db.First(&comment, commentID).Error; err != nil {
@@ -51,7 +53,7 @@ func (r *commentRepository) Delete(commentID uint) error {
 	return nil
 }
 
-func (r *commentRepository) FindByPostID(postID uint) ([]*Comment, error) {
+func (r *commentRepository) FindByPostID(postID int) ([]*Comment, error) {
 	var comments []*Comment
 	if err := r.db.Where("post_id = ?", postID).Find(&comments).Error; err != nil {
 		return nil, err
@@ -59,7 +61,7 @@ func (r *commentRepository) FindByPostID(postID uint) ([]*Comment, error) {
 	return comments, nil
 }
 
-func (r *commentRepository) FindAllByUserID(userID uint) ([]*Comment, error) {
+func (r *commentRepository) FindAllByUserID(userID int) ([]*Comment, error) {
 	var comments []*Comment
 	if err := r.db.Where("user_id = ?", userID).Find(&comments).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

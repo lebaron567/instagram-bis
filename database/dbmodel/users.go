@@ -7,24 +7,29 @@ import (
 )
 
 type User struct {
-	ID             uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	Lastname       string `gorm:"size:30;not null" json:"lastename_user"`
-	Firstname      string `gorm:"size:30;not null" json:"firstname_user"`
-	Email          string `gorm:"size:70;not null" json:"email_user"`
-	Pseudo         string `gorm:"size:30;not null" json:"pseudo_user"`
-	Birthdate      string `gorm:"type:date;not null" json:"birthdate"`
-	Password       string `gorm:"size:100;not null" json:"password_user"`
-	IsPrivate      bool   `gorm:"not null" json:"isprivate_user"`
-	ProfilePicture string `gorm:"type:text;not null" json:"profilpicture_user"`
-	WantsNotify    bool   `gorm:"not null" json:"wantsnotify_user"`
+	gorm.Model
+	LastName       string     `json:"lastename_user"`
+	FirstName      string     `json:"firstname_user"`
+	Email          string     `json:"email_user"`
+	Pseudo         string     `json:"pseudo_user"`
+	Birthdate      string     `json:"birthdate"`
+	Password       string     `json:"password_user"`
+	IsPrivate      bool       `json:"isprivate_user"`
+	ProfilePicture string     `json:"profilpicture_user"`
+	WantsNotify    bool       `json:"wantsnotify_user"`
+	Followers      []Follower `gorm:"foreignKey:IDUser;references:ID"`
+	Posts          []Post     `gorm:"foreignKey:IDUser;references:ID"`
+	Likes          []Like     `gorm:"foreignKey:IDUser;references:ID"`
+	Comments       []Comment  `gorm:"foreignKey:IDUser;references:ID"`
+	Messages       []Message  `gorm:"foreignKey:IDUser;references:ID"`
 }
 
 type UserRepository interface {
 	Create(user *User) (*User, error)
 	FindAll() ([]*User, error)
-	FindByID(id uint) (*User, error)
-	UpdateUser(id uint, updatedUser *User) (*User, error)
-	Delete(userID uint) error
+	FindByID(id int) (*User, error)
+	UpdateUser(id int, updatedUser *User) (*User, error)
+	Delete(userID int) error
 }
 
 type userRepository struct {
@@ -50,7 +55,7 @@ func (r *userRepository) FindAll() ([]*User, error) {
 	return users, nil
 }
 
-func (r *userRepository) UpdateUser(id uint, updatedUser *User) (*User, error) {
+func (r *userRepository) UpdateUser(id int, updatedUser *User) (*User, error) {
 	// Fetch the existing user
 	var user User
 	if err := r.db.First(&user, id).Error; err != nil {
@@ -61,8 +66,8 @@ func (r *userRepository) UpdateUser(id uint, updatedUser *User) (*User, error) {
 	}
 
 	// Update user fields
-	user.Lastname = updatedUser.Lastname
-	user.Firstname = updatedUser.Firstname
+	user.LastName = updatedUser.LastName
+	user.LastName = updatedUser.LastName
 	user.Email = updatedUser.Email
 	user.Pseudo = updatedUser.Pseudo
 	user.Birthdate = updatedUser.Birthdate
@@ -83,7 +88,7 @@ func (r *userRepository) UpdateUser(id uint, updatedUser *User) (*User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) FindByID(id uint) (*User, error) {
+func (r *userRepository) FindByID(id int) (*User, error) {
 	var user User
 	if err := r.db.First(&user, id).Error; err != nil {
 		return nil, err
@@ -91,7 +96,7 @@ func (r *userRepository) FindByID(id uint) (*User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) Delete(userID uint) error {
+func (r *userRepository) Delete(userID int) error {
 	var user User
 	// Trouver l'utilisateur par ID
 	if err := r.db.First(&user, userID).Error; err != nil {
