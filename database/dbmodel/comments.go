@@ -8,7 +8,9 @@ import (
 
 type Comment struct {
 	gorm.Model
+	ID      uint   `gorm:"primaryKey"`
 	IDUser  int    `json:"id_user"`
+	IDPost  uint   `json:"id_post"`
 	Content string `json:"content_comment"`
 	User    User   `gorm:"foreignKey:IDUser;references:ID;constraint:OnDelete:CASCADE;"`
 	Post    Post   `gorm:"foreignKey:IDPost;references:ID;constraint:OnDelete:CASCADE;"`

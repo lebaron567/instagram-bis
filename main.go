@@ -1,13 +1,27 @@
 package main
 
 import (
-    "net/http"
-    "github.com/go-chi/chi/v5"
+	"instagram-bis/config"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
-    // Initialise un nouveau routeur Chi
-    r := chi.NewRouter()
+	_, err := config.New()
+	if err != nil {
+		log.Fatalf("Erreur lors de l'initialisation de la configuration : %v", err)
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	r := chi.NewRouter()
 
-	http.ListenAndServe(":8080", r)
+	log.Printf("Serveur démarré sur le port %s", port)
+	if err := http.ListenAndServe(":"+port, r); err != nil {
+		log.Fatalf("Erreur lors du démarrage du serveur : %v", err)
+	}
 }
