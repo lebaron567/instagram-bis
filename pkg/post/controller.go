@@ -1,112 +1,102 @@
 package post
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
+    "encoding/json"
+    "net/http"
+    "strconv"
 
-	"github.com/go-chi/chi"
+    "github.com/go-chi/chi/v5"
+    "instagram-bis/config"
+    "instagram-bis/database/dbmodel"
 )
 
-func createPost(w http.ResponseWriter, r *http.Request) {
-	// Ensure the request method is POST
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
+func CreatePost(cfg *config.Config) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodPost {
+            http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+            return
+        }
 
-	// Parse the request body
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Unable to read request body", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
+        var post dbmodel.Post
+        if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
+            http.Error(w, "Unable to read request body", http.StatusBadRequest)
+            return
+        }
 
-	// Unmarshal the JSON into a Post struct
-	var newPost Post
-	err = json.Unmarshal(body, &newPost)
-	if err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-		return
-	}
+        if _, err := cfg.PostRepository.Create(&post); err != nil {
+            http.Error(w, "Failed to create post", http.StatusInternalServerError)
+            return
+        }
 
-	// Validate the Post content (optional)
-	if newPost.Title == "" || newPost.Content == "" {
-		http.Error(w, "Title and content are required", http.StatusBadRequest)
-		return
-	}
-
-	// Respond with the created post
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	response := map[string]string{
-		"message": "Post created successfully",
-		"title":   newPost.Title,
-		"author":  newPost.Author,
-	}
-	json.NewEncoder(w).Encode(response)
-
-	fmt.Println("Post created:", newPost)
+        w.WriteHeader(http.StatusCreated)
+        json.NewEncoder(w).Encode(post)
+    }
 }
 
-func getPostId(w http.ResponseWriter, r *http.Request) {
-	// Get the post ID from the URL parameters
-	id := chi.URLParam(r, "id")
+func GetPost(cfg *config.Config) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        postID, err := strconv.Atoi(chi.URLParam(r, "id"))
+        if err != nil {
+            http.Error(w, "Invalid post ID", http.StatusBadRequest)
+            return
+        }
 
-	// Respond with the post ID
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	response := map[string]string{
-		"message": "Post retrieved successfully",
-		"id":      id,
-	}
-	json.NewEncoder(w).Encode(response)
+        post, err := cfg.PostRepository.FindByID(postID)
+        if err != nil {
+            http.Error(w, "Post not found", http.StatusNotFound)
+            return
+        }
 
-	fmt.Println("Post retrieved:", id)
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(post)
+    }
 }
 
-func deletePost(w http.ResponseWriter, r *http.Request) {
-	// Get the post ID from the URL parameters
-	id := chi.URLParam(r, "id")
+func DeletePost(cfg *config.Config) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        postID, err := strconv.Atoi(chi.URLParam(r, "id"))
+        if err != nil {
+            http.Error(w, "Invalid post ID", http.StatusBadRequest)
+            return
+        }
 
-	// Respond with the deleted post ID
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	response := map[string]string{
-		"message": "Post deleted successfully",
-		"id":      id,
-	}
-	json.NewEncoder(w).Encode(response)
+        if err := cfg.PostRepository.Delete(postID); err != nil {
+            http.Error(w, "Failed to delete post", http.StatusInternalServerError)
+            return
+        }
 
-	fmt.Println("Post deleted:", id)
+        w.WriteHeader(http.StatusNoContent)
+    }
 }
 
-func deletePostUser(w http.ResponseWriter, r *http.Request) {
-	// Get the user ID from the URL parameters
-	id := chi.URLParam(r, "id")
+func GetPostsByUser(cfg *config.Config) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        userID, err := strconv.Atoi(chi.URLParam(r, "id"))
+        if err != nil {
+            http.Error(w, "Invalid user ID", http.StatusBadRequest)
+            return
+        }
 
-	// Respond with the user ID
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	response := map[string]string{
-		"message": "Posts for user retrieved successfully",
-		"user_id": id,
-	}
-	json.NewEncoder(w).Encode(response)
+        posts, err := cfg.PostRepository.FindByUserID(userID)
+        if err != nil {
+            http.Error(w, "Failed to get posts", http.StatusInternalServerError)
+            return
+        }
 
-	fmt.Println("Posts for user retrieved:", id)
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(posts)
+    }
 }
 
-func getAllPosts(w http.ResponseWriter, r *http.Request) {
-	// Respond with all posts
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	response := map[string]string{
-		"message": "All posts retrieved successfully",
-	}
-	json.NewEncoder(w).Encode(response)
+func GetAllPosts(cfg *config.Config) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        posts, err := cfg.PostRepository.FindAll()
+        if err != nil {
+            http.Error(w, "Failed to get posts", http.StatusInternalServerError)
+            return
+        }
 
-	fmt.Println("All posts retrieved")
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(posts)
+    }
 }

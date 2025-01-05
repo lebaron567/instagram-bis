@@ -31,10 +31,10 @@ func NewPostRepository(db *gorm.DB) PostRepository {
 }
 
 func (r *postRepository) Create(post *Post) (*Post, error) {
-	if err := r.db.Create(post).Error; err != nil {
-		return nil, err
-	}
-	return post, nil
+    if err := r.db.Create(post).Error; err != nil {
+        return nil, err
+    }
+    return post, nil
 }
 
 func (r *postRepository) FindAll() ([]*Post, error) {
