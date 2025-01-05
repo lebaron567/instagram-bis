@@ -10,7 +10,7 @@ type Discussion struct {
 	gorm.Model
 	Name      string   `json:"name_discussion"`
 	IDMembers int      `json:"id_members"`
-	Members   []Member `gorm:"foreignKey:IDDiscussion;references:IDDiscussion;constraint:OnDelete:CASCADE;"`
+	Members   []Member `gorm:"foreignKey:IDDiscussion;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
 type DiscussionRepository interface {

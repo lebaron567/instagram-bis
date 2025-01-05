@@ -6,6 +6,7 @@ import (
 
 type Post struct {
 	gorm.Model
+	ID       uint      `gorm:"primaryKey"`
 	IDUser   int       `json:"id_user"`
 	Title    string    `json:"title_post"`
 	Content  string    `json:"description_post"`
