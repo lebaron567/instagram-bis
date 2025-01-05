@@ -1,7 +1,8 @@
 package dbmodel
 
 import (
-	"gorm.io/gorm"
+    "errors"
+    "gorm.io/gorm"
 )
 
 type Post struct {
@@ -19,7 +20,10 @@ type Post struct {
 type PostRepository interface {
 	Create(post *Post) (*Post, error)
 	FindAll() ([]*Post, error)
-	FindByUserID(userID int) ([]*Post, error)
+    FindByID(id int) (*Post, error)
+    FindByUserID(userID int) ([]*Post, error)
+	Delete(id int) error
+
 }
 
 type postRepository struct {
@@ -31,10 +35,10 @@ func NewPostRepository(db *gorm.DB) PostRepository {
 }
 
 func (r *postRepository) Create(post *Post) (*Post, error) {
-	if err := r.db.Create(post).Error; err != nil {
-		return nil, err
-	}
-	return post, nil
+    if err := r.db.Create(post).Error; err != nil {
+        return nil, err
+    }
+    return post, nil
 }
 
 func (r *postRepository) FindAll() ([]*Post, error) {
@@ -45,10 +49,28 @@ func (r *postRepository) FindAll() ([]*Post, error) {
 	return posts, nil
 }
 
+func (r *postRepository) FindByID(id int) (*Post, error) {
+    var post Post
+    if err := r.db.First(&post, id).Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, errors.New("post not found")
+        }
+        return nil, err
+    }
+    return &post, nil
+}
+
 func (r *postRepository) FindByUserID(userID int) ([]*Post, error) {
 	var posts []*Post
 	if err := r.db.Where("user_id = ?", userID).Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
+}
+
+func (r *postRepository) Delete(id int) error {
+    if err := r.db.Delete(&Post{}, id).Error; err != nil {
+        return err
+    }
+    return nil
 }
