@@ -7,13 +7,8 @@ import (
 
     "github.com/go-chi/chi/v5"
     "instagram-bis/config"
+    "instagram-bis/database/dbmodel"
 )
-
-type Comment struct {
-    ID      uint   `gorm:"primaryKey"`
-    PostID  uint   `gorm:"index"`
-    Content string `gorm:"type:text"`
-}
 
 func AddComment(cfg *config.Config) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -23,14 +18,14 @@ func AddComment(cfg *config.Config) http.HandlerFunc {
             return
         }
 
-        var comment Comment
+        var comment dbmodel.Comment
         if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
             http.Error(w, "Invalid request payload", http.StatusBadRequest)
             return
         }
 
-        comment.PostID = uint(postID)
-        if err := cfg.DB.Create(&comment).Error; err != nil {
+        comment.IDPost = uint(postID)
+        if _, err := cfg.CommentRepository.Create(&comment); err != nil {
             http.Error(w, "Failed to add comment", http.StatusInternalServerError)
             return
         }
@@ -48,8 +43,8 @@ func GetComments(cfg *config.Config) http.HandlerFunc {
             return
         }
 
-        var comments []Comment
-        if err := cfg.DB.Where("post_id = ?", postID).Find(&comments).Error; err != nil {
+        comments, err := cfg.CommentRepository.FindByPostID(postID)
+        if err != nil {
             http.Error(w, "Failed to get comments", http.StatusInternalServerError)
             return
         }
@@ -67,7 +62,7 @@ func DeleteComment(cfg *config.Config) http.HandlerFunc {
             return
         }
 
-        if err := cfg.DB.Delete(&Comment{}, commentID).Error; err != nil {
+        if err := cfg.CommentRepository.Delete(commentID); err != nil {
             http.Error(w, "Failed to delete comment", http.StatusInternalServerError)
             return
         }
