@@ -11,14 +11,14 @@ import (
 
 type Config struct {
 	DB                   *gorm.DB
-	userRepository       dbmodel.UserRepository
-	postRepository       dbmodel.PostRepository
-	commentRepository    dbmodel.CommentRepository
-	likeRepository       dbmodel.LikeRepository
-	followerRepository   dbmodel.FollowerRepository
-	messageRepository    dbmodel.MessageRepository
-	discussionRepository dbmodel.DiscussionRepository
-	memberRepository     dbmodel.MemberRepository
+	UserRepository       dbmodel.UserRepository
+	PostRepository       dbmodel.PostRepository
+	CommentRepository    dbmodel.CommentRepository
+	LikeRepository       dbmodel.LikeRepository
+	FollowerRepository   dbmodel.FollowerRepository
+	MessageRepository    dbmodel.MessageRepository
+	DiscussionRepository dbmodel.DiscussionRepository
+	MemberRepository     dbmodel.MemberRepository
 }
 
 func New() (*Config, error) {
@@ -43,14 +43,14 @@ func New() (*Config, error) {
 
 	config := Config{
 		DB:                   db,
-		userRepository:       userRepo,
-		postRepository:       postRepo,
-		commentRepository:    commentRepo,
-		likeRepository:       likeRepo,
-		followerRepository:   followRepo,
-		messageRepository:    messageRepo,
-		discussionRepository: discussionRepo,
-		memberRepository:     memberRepo,
+		UserRepository:       userRepo,
+		PostRepository:       postRepo,
+		CommentRepository:    commentRepo,
+		LikeRepository:       likeRepo,
+		FollowerRepository:   followRepo,
+		MessageRepository:    messageRepo,
+		DiscussionRepository: discussionRepo,
+		MemberRepository:     memberRepo,
 	}
 
 	return &config, nil
