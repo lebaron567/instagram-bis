@@ -9,8 +9,18 @@ import (
 	"instagram-bis/config"
 	"instagram-bis/database/dbmodel"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/go-chi/chi/v5"
 )
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
 
 // RegisterUser godoc
 // @Summary Register a new user
@@ -30,6 +40,13 @@ func RegisterUser(cfg *config.Config) http.HandlerFunc {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
+
+		hashedPassword, err := HashPassword(user.Password)
+		if err != nil {
+			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+			return
+		}
+		user.Password = hashedPassword
 
 		if _, err := cfg.UserRepository.Create(&user); err != nil {
 			http.Error(w, "Failed to register user", http.StatusInternalServerError)
@@ -58,7 +75,6 @@ func RegisterUser(cfg *config.Config) http.HandlerFunc {
 // @Router /users/login [post]
 func LoginUser(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Implémentation de la connexion et génération de JWT
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"message": "Successfully logged in"})
 	}
@@ -156,7 +172,6 @@ func FollowUser(cfg *config.Config) http.HandlerFunc {
 			return
 		}
 
-		// Vérifier si l'utilisateur essaie de se suivre lui-même
 		if userID == currentUserID {
 			http.Error(w, "You cannot follow yourself", http.StatusBadRequest)
 			return

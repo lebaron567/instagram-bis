@@ -3,21 +3,27 @@ package authentication
 import (
 	"encoding/json"
 	"net/http"
+
+	"instagram-bis/config"
 	"golang.org/x/crypto/bcrypt"
-	"instagram-bis/database/dbmodel"
-	"gorm.io/gorm"
 )
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email_user"`
+	Password string `json:"password_user"`
 }
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	Message string `json:"message"`
+	Token   string `json:"token,omitempty"`
 }
 
-func LoginHandler(db *gorm.DB) http.HandlerFunc {
+func ComparePassword(hashedPassword, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	return err == nil
+}
+
+func LoginHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -25,33 +31,31 @@ func LoginHandler(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
-		userRepo := dbmodel.NewUserRepository(db)
-		passwordHash, err := userRepo.FindPasswordByEmail(req.Email)
+		user, err := cfg.UserRepository.FindByEmail(req.Email)
 		if err != nil {
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
-		err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.Password))
-		if err != nil {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
-		// Générer le token
-		user, err := userRepo.FindByEmail(req.Email)
-		if err != nil {
-			http.Error(w, "User not found", http.StatusInternalServerError)
-			return
-		}
-
-		token, err := GenerateJWT(int(user.ID), user.Pseudo, user.Email)
+		// Générer un token JWT
+		token, err := CreateToken(user.Email)
 		if err != nil {
 			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 			return
 		}
 
+		// Créer la réponse avec le message et le token
+		response := LoginResponse{
+			Message: "Login successful",
+			Token:   token,
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(LoginResponse{Token: token})
+		json.NewEncoder(w).Encode(response)
 	}
 }

@@ -5,6 +5,7 @@ import (
 
 	model "instagram-bis/pkg/models"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -139,6 +140,14 @@ func (User *User) ToModel() model.User {
 		ProfilePicture: User.ProfilePicture,
 		WantsNotify:    User.WantsNotify,
 	}
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
 
 func (r *userRepository) FindByEmail(email string) (*User, error) {

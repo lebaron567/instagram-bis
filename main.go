@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"instagram-bis/config"
 	"instagram-bis/pkg/authentication"
 	"instagram-bis/pkg/comment"
@@ -10,9 +14,6 @@ import (
 	"instagram-bis/pkg/messagerie"
 	"instagram-bis/pkg/post"
 	"instagram-bis/pkg/user"
-	"log"
-	"net/http"
-	"os"
 
 	_ "instagram-bis/docs" // Importez les docs générées par Swag
 
@@ -46,8 +47,8 @@ func main() {
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Mount("/auth", authentication.Routes(cfg))
 		r.Mount("/comment", comment.Routes(cfg))
-		r.Mount("/auth", authentication.Routes(cfg.DB))
 		r.Mount("/users", user.Routes(cfg))
 		r.Mount("/like", like.Routes(cfg))
 		r.Mount("/discussions", conversation.RegisterRoutes(cfg))

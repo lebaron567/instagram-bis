@@ -1,16 +1,14 @@
 package authentication
 
 import (
+	"instagram-bis/config"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"gorm.io/gorm"
 )
 
-func Routes(db *gorm.DB) http.Handler {
+func Routes(cfg *config.Config) http.Handler {
 	r := chi.NewRouter()
-
-	r.Post("/login", LoginHandler(db))
-
+	r.Post("/login", LoginHandler(cfg))
 	return r
 }
