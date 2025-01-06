@@ -35,13 +35,13 @@ func main() {
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Mount("/comment", comment.Routes(cfg))
-		r.Mount("/auth", authentication.Routes())
-		r.Mount("/", user.Routes(cfg))
-		r.Mount("/", like.Routes(cfg))
-		r.Mount("/", conversation.RegisterRoutes(cfg))
-		r.Mount("/", messagerie.RegisterRoutes(cfg))
-		r.Mount("/", post.Routes(cfg))
+		comment.Routes(cfg)
+		authentication.Routes()
+		user.Routes(cfg)
+		like.Routes(cfg)
+		conversation.RegisterRoutes(cfg)
+		messagerie.RegisterRoutes(cfg)
+		post.Routes(cfg)
 	})
 
 	r.Group(func(r chi.Router) {
