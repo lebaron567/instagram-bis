@@ -1,17 +1,15 @@
 package conversation
 
 import (
+	"instagram-bis/config"
+
 	"github.com/go-chi/chi/v5"
 )
 
-func Routes() {
-	r := chi.NewRouter()
-
-	r.Get("/", GetConversations)
-	r.Get("/{id}", GetConversation)
-	r.Post("/", CreateConversation)
-	r.Post("/{id}/messages", CreateMessage)
-	r.Delete("/{id}", DeleteConversation)
-
-	return r
+// RegisterRoutes enregistre toutes les routes pour la gestion des discussions
+func RegisterRoutes(r chi.Router, cfg *config.Config) {
+	r.Post("/discussions", CreateDiscussion(cfg))                    // Créer une nouvelle discussion
+	r.Get("/discussions/user/{userID}", GetDiscussionsByUserID(cfg)) // Récupérer toutes les discussions pour un utilisateur
+	r.Get("/discussions/{id}", GetDiscussionByID(cfg))               // Récupérer une discussion par ID
+	r.Delete("/discussions/{id}", DeleteDiscussion(cfg))             // Supprimer une discussion par ID
 }
