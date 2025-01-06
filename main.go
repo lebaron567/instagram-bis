@@ -20,15 +20,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	httpSwagger "github.com/swaggo/http-swagger"
-
-	"instagram-bis/config"
-	"instagram-bis/pkg/authentication"
-	"instagram-bis/pkg/comment"
-	"instagram-bis/pkg/conversation"
-	"instagram-bis/pkg/like"
-	"instagram-bis/pkg/messagerie"
-	"instagram-bis/pkg/post"
-	"instagram-bis/pkg/user"
 )
 
 // @title Instagram Bis API
@@ -56,7 +47,7 @@ func main() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/comment", comment.Routes(cfg))
-		r.Mount("/auth", authentication.Routes())
+		r.Mount("/auth", authentication.Routes(cfg.DB))
 		r.Mount("/users", user.Routes(cfg))
 		r.Mount("/like", like.Routes(cfg))
 		r.Mount("/discussions", conversation.RegisterRoutes(cfg))

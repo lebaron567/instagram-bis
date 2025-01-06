@@ -1,6 +1,9 @@
 package model
 
+import "gorm.io/gorm"
+
 type Post struct {
+	gorm.Model
 	ID       uint      `json:"id"`
 	IDUser   int       `json:"id_user"`
 	Title    string    `json:"title_post"`

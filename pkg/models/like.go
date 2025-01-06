@@ -1,6 +1,9 @@
 package model
 
+import "gorm.io/gorm"
+
 type Like struct {
+	gorm.Model
 	ID        uint    `json:"id"`
 	IDPost    int     `json:"id_post"`
 	IDUser    int     `json:"id_user"`
