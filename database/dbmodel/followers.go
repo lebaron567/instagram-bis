@@ -1,6 +1,8 @@
 package dbmodel
 
 import (
+	model "instagram-bis/pkg/models"
+
 	"gorm.io/gorm"
 )
 
@@ -51,4 +53,12 @@ func (r *followerRepository) FindFollowingByUserID(userID int) ([]*Follower, err
 		return nil, err
 	}
 	return following, nil
+}
+
+func (Follower *Follower) ToModel() model.Follower {
+	return model.Follower{
+		ID:         Follower.ID,
+		IDUser:     Follower.IDUser,
+		IDFollower: Follower.IDFollower,
+	}
 }

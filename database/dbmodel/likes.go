@@ -1,6 +1,8 @@
 package dbmodel
 
 import (
+	model "instagram-bis/pkg/models"
+
 	"gorm.io/gorm"
 )
 
@@ -54,4 +56,16 @@ func (r *likeRepository) FindByCommentID(commentID int) ([]*Like, error) {
 		return nil, err
 	}
 	return likes, nil
+}
+
+func (Like *Like) ToModel() model.Like {
+	return model.Like{
+		ID:        Like.ID,
+		IDPost:    Like.IDPost,
+		IDUser:    Like.IDUser,
+		IDComment: Like.IDComment,
+		Post:      Like.Post.ToModel(),
+		User:      Like.User.ToModel(),
+		Comment:   Like.Comment.ToModel(),
+	}
 }

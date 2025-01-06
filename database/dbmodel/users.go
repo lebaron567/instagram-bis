@@ -3,6 +3,8 @@ package dbmodel
 import (
 	"errors"
 
+	model "instagram-bis/pkg/models"
+
 	"gorm.io/gorm"
 )
 
@@ -121,4 +123,18 @@ func (r *userRepository) FindPasswordByEmail(email string) (string, error) {
 		return "", err
 	}
 	return user.Password, nil
+}
+
+func (User *User) ToModel() model.User {
+	return model.User{
+		ID:             User.ID,
+		LastName:       User.LastName,
+		FirstName:      User.FirstName,
+		Email:          User.Email,
+		Pseudo:         User.Pseudo,
+		Birthdate:      User.Birthdate,
+		IsPrivate:      User.IsPrivate,
+		ProfilePicture: User.ProfilePicture,
+		WantsNotify:    User.WantsNotify,
+	}
 }

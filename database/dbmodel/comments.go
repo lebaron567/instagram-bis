@@ -2,6 +2,7 @@ package dbmodel
 
 import (
 	"errors"
+	model "instagram-bis/pkg/models"
 
 	"gorm.io/gorm"
 )
@@ -72,4 +73,13 @@ func (r *commentRepository) FindAllByUserID(userID int) ([]*Comment, error) {
 		return nil, err
 	}
 	return comments, nil
+}
+
+func (Comment *Comment) ToModel() model.Comment {
+	return model.Comment{
+		ID:      Comment.ID,
+		IDUser:  Comment.IDUser,
+		IDPost:  Comment.IDPost,
+		Content: Comment.Content,
+	}
 }

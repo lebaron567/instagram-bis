@@ -2,6 +2,7 @@ package dbmodel
 
 import (
 	"errors"
+	model "instagram-bis/pkg/models"
 
 	"gorm.io/gorm"
 )
@@ -62,4 +63,12 @@ func (r *discussionRepository) Delete(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (Discussion *Discussion) ToModel() model.Discussion {
+	return model.Discussion{
+		ID:        Discussion.ID,
+		Name:      Discussion.Name,
+		IDMembers: Discussion.IDMembers,
+	}
 }
