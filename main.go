@@ -34,7 +34,7 @@ func main() {
 	})
 
 	r.Group(func(r chi.Router) {
-		r.Use(authentication.AuthMiddleware("your_secret_key"))
+		r.Use(authentication.AuthMiddleware("c8f9d72e3b4a6d9e7f0b1c2a3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3"))
 
 		r.Get("/profile", func(w http.ResponseWriter, r *http.Request) {
 			user := authentication.GetUserFromContext(r.Context())
