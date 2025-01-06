@@ -17,6 +17,7 @@ type DiscussionRepository interface {
 	Create(discussion *Discussion) (*Discussion, error)
 	FindByID(id int) (*Discussion, error)
 	FindByUserID(userID int) ([]*Discussion, error)
+	Delete(id int) error
 }
 
 type discussionRepository struct {
@@ -54,4 +55,11 @@ func (r *discussionRepository) FindByID(id int) (*Discussion, error) {
 		return nil, err
 	}
 	return &discussion, nil
+}
+
+func (r *discussionRepository) Delete(id int) error {
+	if err := r.db.Delete(&Discussion{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }
