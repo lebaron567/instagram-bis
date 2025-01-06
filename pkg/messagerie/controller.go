@@ -1,91 +1,95 @@
 package messagerie
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"instagram-bis/config"
 	"instagram-bis/database/dbmodel"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 )
 
-type MessageController struct {
-	repo dbmodel.MessageRepository
+// CreateMessage crée un nouveau message
+func CreateMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var msg dbmodel.Message
+		if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		if _, err := cfg.MessageRepository.Create(&msg); err != nil {
+			http.Error(w, "Failed to create message", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(msg)
+	}
 }
 
-func NewMessageController(repo dbmodel.MessageRepository) *MessageController {
-	return &MessageController{repo: repo}
+// GetMessagesByDiscussion récupère les messages liés à une discussion
+func GetMessagesByDiscussion(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		discussionID, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
+			return
+		}
+
+		messages, err := cfg.MessageRepository.FindByDiscussionID(discussionID)
+		if err != nil {
+			http.Error(w, "Failed to retrieve messages", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(messages)
+	}
 }
 
-// Créer un message
-func (mc *MessageController) CreateMessage(c *gin.Context) {
-	var message dbmodel.Message
-	if err := c.ShouldBindJSON(&message); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// UpdateMessage met à jour un message existant
+func UpdateMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		messageID, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			http.Error(w, "Invalid message ID", http.StatusBadRequest)
+			return
+		}
 
-	createdMessage, err := mc.repo.Create(&message)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to create message"})
-		return
-	}
+		var updatedMessage dbmodel.Message
+		if err := json.NewDecoder(r.Body).Decode(&updatedMessage); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
 
-	c.JSON(http.StatusCreated, createdMessage)
+		updatedMsg, err := cfg.MessageRepository.Update(messageID, &updatedMessage) // Utilisation de la méthode Update avec l'ID
+		if err != nil {
+			http.Error(w, "Failed to update message", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(updatedMsg) // Retourner le message mis à jour
+	}
 }
 
-// Récupérer les messages d'une discussion
-func (mc *MessageController) GetMessagesByDiscussionID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("discussion_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid discussion ID"})
-		return
+// DeleteMessage supprime un message
+func DeleteMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		messageID, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			http.Error(w, "Invalid message ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := cfg.MessageRepository.Delete(messageID); err != nil {
+			http.Error(w, "Failed to delete message", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
-
-	messages, err := mc.repo.FindByDiscussionID(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch messages"})
-		return
-	}
-
-	c.JSON(http.StatusOK, messages)
-}
-
-// Supprimer un message
-func (mc *MessageController) DeleteMessage(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid message ID"})
-		return
-	}
-
-	if err := mc.repo.Delete(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to delete message"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Message deleted successfully"})
-}
-
-// Mettre à jour un message
-func (mc *MessageController) UpdateMessage(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid message ID"})
-		return
-	}
-
-	var updatedMessage dbmodel.Message
-	if err := c.ShouldBindJSON(&updatedMessage); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	message, err := mc.repo.Update(id, &updatedMessage)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update message"})
-		return
-	}
-
-	c.JSON(http.StatusOK, message)
 }
