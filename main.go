@@ -13,6 +13,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"gorm.io/gorm"
+
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -34,9 +36,10 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
+	var db *gorm.DB 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/comment", comment.Routes(cfg))
-		r.Mount("/auth", authentication.Routes())
+		r.Mount("/auth", authentication.Routes(db))
 		r.Mount("/users", user.Routes(cfg))
 		r.Mount("/like", like.Routes(cfg))
 		r.Mount("/discussions", conversation.RegisterRoutes(cfg))

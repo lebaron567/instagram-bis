@@ -32,6 +32,8 @@ type UserRepository interface {
 	FindByID(id int) (*User, error)
 	UpdateUser(id int, updatedUser *User) (*User, error)
 	Delete(userID int) error
+	FindPasswordByEmail(email string) (string, error)
+	FindByEmail(email string) (*User, error)
 }
 
 type userRepository struct {
@@ -137,4 +139,15 @@ func (User *User) ToModel() model.User {
 		ProfilePicture: User.ProfilePicture,
 		WantsNotify:    User.WantsNotify,
 	}
+}
+
+func (r *userRepository) FindByEmail(email string) (*User, error) {
+	var user User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &user, nil
 }
