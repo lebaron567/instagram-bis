@@ -1,21 +1,17 @@
 package messagerie
 
 import (
-	"instagram-bis/database/dbmodel"
+	"instagram-bis/config"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/go-chi/chi/v5"
 )
 
-func RegisterMessageRoutes(router *gin.Engine, db *gorm.DB) {
-	repo := dbmodel.NewMessageRepository(db)
-	controller := NewMessageController(repo)
-
-	messageRoutes := router.Group("/messages")
-	{
-		messageRoutes.POST("/", controller.CreateMessage)                                     // Créer un message
-		messageRoutes.GET("/discussion/:discussion_id", controller.GetMessagesByDiscussionID) // Récupérer les messages d'une discussion
-		messageRoutes.DELETE("/:id", controller.DeleteMessage)                                // Supprimer un message
-		messageRoutes.PUT("/:id", controller.UpdateMessage)                                   // Mettre à jour un message
-	}
+// RegisterRoutes enregistre les routes du message
+func RegisterRoutes(cfg *config.Config) chi.Router {
+	r := chi.NewRouter()
+	r.Post("/messages", CreateMessage(cfg))                          // Créer un message
+	r.Get("/messages/discussion/{id}", GetMessagesByDiscussion(cfg)) // Récupérer les messages d'une discussion
+	r.Put("/messages/{id}", UpdateMessage(cfg))                      // Mettre à jour un message
+	r.Delete("/messages/{id}", DeleteMessage(cfg))                   // Supprimer un message
+	return r
 }
