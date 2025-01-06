@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"instagram-bis/config"
+	"instagram-bis/pkg/authentication"
 	"instagram-bis/pkg/comment"
 	"log"
 	"net/http"
@@ -29,6 +31,15 @@ func main() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Mount("/comment", comment.Routes(cfg))
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(authentication.AuthMiddleware("your_secret_key"))
+
+		r.Get("/profile", func(w http.ResponseWriter, r *http.Request) {
+			user := authentication.GetUserFromContext(r.Context())
+			w.Write([]byte(fmt.Sprintf("Welcome, %s!", user)))
+		})
 	})
 
 	log.Printf("Serveur démarré sur le port %s", port)
