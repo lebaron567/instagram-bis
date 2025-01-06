@@ -110,3 +110,15 @@ func (r *userRepository) Delete(userID int) error {
 
 	return nil
 }
+
+// FindPasswordByEmail retourne le mot de passe d'un utilisateur à partir de son email
+func (r *userRepository) FindPasswordByEmail(email string) (string, error) {
+	var user User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", errors.New("user not found")
+		}
+		return "", err
+	}
+	return user.Password, nil
+}
