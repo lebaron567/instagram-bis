@@ -23,11 +23,11 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// @title Instagram Bis API
-// @version 1.0
-// @description This is the API documentation for Instagram Bis.
-// @host localhost:8080
-// @BasePath /api/v1
+//	@title			Instagram Bis API
+//	@version		1.0
+//	@description	This is the API documentation for Instagram Bis.
+//	@host			localhost:8080
+//	@BasePath		/api/v1
 
 func main() {
 	cfg, err := config.New()

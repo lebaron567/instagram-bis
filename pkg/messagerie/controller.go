@@ -13,7 +13,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-
+// CreateMessage godoc
+// @Summary Create a new message
+// @Description Create a new message
+// @Tags messages
+// @Accept json
+// @Produce json
+// @Success 201 
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to create message"
+// @Router /messages [post]
 func CreateMessage(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var msg dbmodel.Message
@@ -38,7 +47,16 @@ func CreateMessage(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// GetMessagesByDiscussion godoc
+// @Summary Get messages by discussion ID
+// @Description Get messages by discussion ID
+// @Tags messages
+// @Produce json
+// @Param id path int true "Discussion ID"
+// @Success 200 
+// @Failure 400 {string} string "Invalid discussion ID"
+// @Failure 500 {string} string "Failed to retrieve messages"
+// @Router /discussions/{id}/messages [get]
 func GetMessagesByDiscussion(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		discussionID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -58,7 +76,17 @@ func GetMessagesByDiscussion(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// UpdateMessage godoc
+// @Summary Update a message
+// @Description Update a message
+// @Tags messages
+// @Accept json
+// @Produce json
+// @Param id path int true "Message ID"
+// @Success 200 
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to update message"
+// @Router /messages/{id} [put]
 func UpdateMessage(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		messageID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -85,7 +113,15 @@ func UpdateMessage(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// DeleteMessage godoc
+// @Summary Delete a message by ID
+// @Description Delete a message by ID
+// @Tags messages
+// @Param id path int true "Message ID"
+// @Success 204
+// @Failure 400 {string} string "Invalid message ID"
+// @Failure 500 {string} string "Failed to delete message"
+// @Router /messages/{id} [delete]
 func DeleteMessage(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		messageID, err := strconv.Atoi(chi.URLParam(r, "id"))

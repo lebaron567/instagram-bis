@@ -11,7 +11,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-
+// CreatePost godoc
+// @Summary Create a new post
+// @Description Create a new post
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Success 201 
+// @Failure 400 {string} string "Invalid request"
+// @Failure 500 {string} string "Failed to create post"
+// @Router /posts [post]
 func CreatePost(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -40,7 +49,16 @@ func CreatePost(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// GetPost godoc
+// @Summary Get a post by ID
+// @Description Get a post by ID
+// @Tags posts
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 
+// @Failure 400 {string} string "Invalid post ID"
+// @Failure 404 {string} string "Post not found"
+// @Router /posts/{id} [get]
 func GetPost(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -60,7 +78,15 @@ func GetPost(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// DeletePost godoc
+// @Summary Delete a post by ID
+// @Description Delete a post by ID
+// @Tags posts
+// @Param id path int true "Post ID"
+// @Success 204
+// @Failure 400 {string} string "Invalid post ID"
+// @Failure 500 {string} string "Failed to delete post"
+// @Router /posts/{id} [delete]
 func DeletePost(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -78,7 +104,16 @@ func DeletePost(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// GetPostsByUser godoc
+// @Summary Get posts by user ID
+// @Description Get posts by user ID
+// @Tags posts
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 
+// @Failure 400 {string} string "Invalid user ID"
+// @Failure 500 {string} string "Failed to get posts"
+// @Router /posts/user/{id} [get]
 func GetPostsByUser(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -98,7 +133,14 @@ func GetPostsByUser(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-
+// GetAllPosts godoc
+// @Summary Get all posts
+// @Description Get all posts
+// @Tags posts
+// @Produce json
+// @Success 200 
+// @Failure 500 {string} string "Failed to get posts"
+// @Router /posts/feed [get]
 func GetAllPosts(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		posts, err := cfg.PostRepository.FindAll()
