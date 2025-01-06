@@ -3,6 +3,8 @@ package dbmodel
 import (
 	"errors"
 
+	model "instagram-bis/pkg/models"
+
 	"gorm.io/gorm"
 )
 
@@ -30,6 +32,8 @@ type UserRepository interface {
 	FindByID(id int) (*User, error)
 	UpdateUser(id int, updatedUser *User) (*User, error)
 	Delete(userID int) error
+	FindPasswordByEmail(email string) (string, error)
+	FindByEmail(email string) (*User, error)
 }
 
 type userRepository struct {
@@ -121,4 +125,29 @@ func (r *userRepository) FindPasswordByEmail(email string) (string, error) {
 		return "", err
 	}
 	return user.Password, nil
+}
+
+func (User *User) ToModel() model.User {
+	return model.User{
+		ID:             User.ID,
+		LastName:       User.LastName,
+		FirstName:      User.FirstName,
+		Email:          User.Email,
+		Pseudo:         User.Pseudo,
+		Birthdate:      User.Birthdate,
+		IsPrivate:      User.IsPrivate,
+		ProfilePicture: User.ProfilePicture,
+		WantsNotify:    User.WantsNotify,
+	}
+}
+
+func (r *userRepository) FindByEmail(email string) (*User, error) {
+	var user User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &user, nil
 }

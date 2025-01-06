@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
-func Routes() http.Handler {
+func Routes(db *gorm.DB) http.Handler {
 	r := chi.NewRouter()
 
-	r.Post("/login", LoginHandler)
+	r.Post("/login", LoginHandler(db))
 
 	return r
 }

@@ -1,6 +1,8 @@
 package dbmodel
 
 import (
+	model "instagram-bis/pkg/models"
+
 	"gorm.io/gorm"
 )
 
@@ -52,4 +54,12 @@ func (r *memberRepository) FindByUserID(userID int) ([]*Member, error) {
 		return nil, err
 	}
 	return members, nil
+}
+
+func (Member *Member) ToModel() model.Member {
+	return model.Member{
+		ID:           Member.ID,
+		IDUser:       Member.IDUser,
+		IDDiscussion: Member.IDDiscussion,
+	}
 }
