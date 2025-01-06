@@ -2,6 +2,8 @@ package model
 
 import "gorm.io/gorm"
 
+// Like represents a like on a post
+// @Description Like represents a like on a post
 type Like struct {
 	gorm.Model
 	ID        uint    `json:"id"`

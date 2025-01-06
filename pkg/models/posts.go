@@ -2,6 +2,8 @@ package model
 
 import "gorm.io/gorm"
 
+// Post represents a post made by a user
+// @Description Post represents a post made by a user
 type Post struct {
 	gorm.Model
 	ID       uint      `json:"id"`

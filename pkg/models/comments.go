@@ -2,6 +2,9 @@ package model
 
 import "gorm.io/gorm"
 
+
+// Comment represents a comment on a post
+// @Description Comment represents a comment on a post
 type Comment struct {
 	gorm.Model
 	ID      uint   `json:"id"`
