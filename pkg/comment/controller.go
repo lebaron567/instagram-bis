@@ -10,6 +10,18 @@ import (
     "instagram-bis/database/dbmodel"
 )
 
+// AddComment godoc
+// @Summary Add a comment to a post
+// @Description Add a comment to a post
+// @Tags comments
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param comment body dbmodel.Comment true "Comment"
+// @Success 201 {object} dbmodel.Comment
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to add comment"
+// @Router /posts/{id}/comments [post]
 func AddComment(cfg *config.Config) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         postID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -35,6 +47,16 @@ func AddComment(cfg *config.Config) http.HandlerFunc {
     }
 }
 
+// GetComments godoc
+// @Summary Get comments for a post
+// @Description Get comments for a post
+// @Tags comments
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 {array} dbmodel.Comment
+// @Failure 400 {string} string "Invalid post ID"
+// @Failure 500 {string} string "Failed to get comments"
+// @Router /posts/{id}/comments [get]
 func GetComments(cfg *config.Config) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         postID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -54,6 +76,15 @@ func GetComments(cfg *config.Config) http.HandlerFunc {
     }
 }
 
+// DeleteComment godoc
+// @Summary Delete a comment by ID
+// @Description Delete a comment by ID
+// @Tags comments
+// @Param id path int true "Comment ID"
+// @Success 204
+// @Failure 400 {string} string "Invalid comment ID"
+// @Failure 500 {string} string "Failed to delete comment"
+// @Router /comments/{id} [delete]
 func DeleteComment(cfg *config.Config) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         commentID, err := strconv.Atoi(chi.URLParam(r, "id"))
