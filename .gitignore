@@ -25,3 +25,6 @@ go.work.sum
 .env
 go.mod
 go.sum
+
+/docs/swagger.json
+/docs/swagger.yaml
