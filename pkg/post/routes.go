@@ -1,18 +1,19 @@
 package post
 
 import (
-    "github.com/go-chi/chi/v5"
-    "instagram-bis/config"
+	"instagram-bis/config"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func Routes(cfg *config.Config) chi.Router {
-    r := chi.NewRouter()
+	r := chi.NewRouter()
 
-    r.Post("/posts", CreatePost(cfg))
-    r.Get("/posts/{id}", GetPost(cfg))
-    r.Delete("/posts/{id}", DeletePost(cfg))
-    r.Get("/posts/user/{id}", GetPostsByUser(cfg))
-    r.Get("/posts/feed", GetAllPosts(cfg))
+	r.Post("/", CreatePost(cfg))
+	r.Get("/{id}", GetPost(cfg))
+	r.Delete("/{id}", DeletePost(cfg))
+	r.Get("/user/{id}", GetPostsByUser(cfg))
+	r.Get("/feed", GetAllPosts(cfg))
 
-    return r
+	return r
 }

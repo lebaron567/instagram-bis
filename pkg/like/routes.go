@@ -1,15 +1,16 @@
 package like
 
 import (
-    "github.com/go-chi/chi/v5"
-    "instagram-bis/config"
+	"instagram-bis/config"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func Routes(cfg *config.Config) chi.Router {
-    r := chi.NewRouter()
+	r := chi.NewRouter()
 
-    r.Post("/posts/{id}/like", LikePost(cfg))
-    r.Delete("/posts/{id}/like", UnlikePost(cfg))
+	r.Post("/{id}/like", LikePost(cfg))
+	r.Delete("/{id}/like", UnlikePost(cfg))
 
-    return r
+	return r
 }
