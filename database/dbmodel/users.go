@@ -3,6 +3,7 @@ package dbmodel
 import (
 	"errors"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -30,11 +31,8 @@ type UserRepository interface {
 	FindByID(id int) (*User, error)
 	UpdateUser(id int, updatedUser *User) (*User, error)
 	Delete(userID int) error
-	FindPasswordByEmail(email string) (string, error) 
-	FindByEmail(email string) (*User, error) 
-
-
-
+	FindPasswordByEmail(email string) (string, error)
+	FindByEmail(email string) (*User, error)
 }
 
 type userRepository struct {
@@ -126,6 +124,14 @@ func (r *userRepository) FindPasswordByEmail(email string) (string, error) {
 		return "", err
 	}
 	return user.Password, nil
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
 
 func (r *userRepository) FindByEmail(email string) (*User, error) {
