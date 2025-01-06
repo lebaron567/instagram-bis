@@ -7,11 +7,22 @@ import (
 
 	"instagram-bis/config"
 	"instagram-bis/database/dbmodel"
+	model "instagram-bis/pkg/models"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// CreateDiscussion crée une nouvelle discussion
+// CreateDiscussion godoc
+// @Summary Create a new discussion
+// @Description Create a new discussion
+// @Tags discussions
+// @Accept json
+// @Produce json
+// @Param discussion body dbmodel.Discussion true "Discussion"
+// @Success 201 {object} dbmodel.Discussion
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to create discussion"
+// @Router /discussions [post]
 func CreateDiscussion(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var discussion dbmodel.Discussion
@@ -26,12 +37,26 @@ func CreateDiscussion(cfg *config.Config) http.HandlerFunc {
 			return
 		}
 
+		reponse := model.Discussion{
+			ID:        createdDiscussion.ID,
+			Name:      createdDiscussion.Name,
+			IDMembers: createdDiscussion.IDMembers,
+		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(createdDiscussion)
+		json.NewEncoder(w).Encode(reponse)
 	}
 }
 
-// GetDiscussionsByUserID récupère toutes les discussions pour un utilisateur
+// GetDiscussionsByUserID godoc
+// @Summary Get discussions by user ID
+// @Description Get discussions by user ID
+// @Tags discussions
+// @Produce json
+// @Param userID path int true "User ID"
+// @Success 200 {array} dbmodel.Discussion
+// @Failure 400 {string} string "Invalid user ID"
+// @Failure 500 {string} string "Failed to retrieve discussions"
+// @Router /users/{userID}/discussions [get]
 func GetDiscussionsByUserID(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
@@ -51,7 +76,16 @@ func GetDiscussionsByUserID(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-// GetDiscussionByID récupère une discussion par son ID
+// GetDiscussionByID godoc
+// @Summary Get a discussion by ID
+// @Description Get a discussion by ID
+// @Tags discussions
+// @Produce json
+// @Param id path int true "Discussion ID"
+// @Success 200 {object} dbmodel.Discussion
+// @Failure 400 {string} string "Invalid discussion ID"
+// @Failure 500 {string} string "Failed to retrieve discussion"
+// @Router /discussions/{id} [get]
 func GetDiscussionByID(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		discussionID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -71,7 +105,15 @@ func GetDiscussionByID(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-// DeleteDiscussion supprime une discussion par son ID
+// DeleteDiscussion godoc
+// @Summary Delete a discussion by ID
+// @Description Delete a discussion by ID
+// @Tags discussions
+// @Param id path int true "Discussion ID"
+// @Success 204
+// @Failure 400 {string} string "Invalid discussion ID"
+// @Failure 500 {string} string "Failed to delete discussion"
+// @Router /discussions/{id} [delete]
 func DeleteDiscussion(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		discussionID, err := strconv.Atoi(chi.URLParam(r, "id"))

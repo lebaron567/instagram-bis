@@ -1,6 +1,8 @@
 package dbmodel
 
 import (
+	model "instagram-bis/pkg/models"
+
 	"gorm.io/gorm"
 )
 
@@ -63,4 +65,13 @@ func (r *messageRepository) Update(id int, updatedMessage *Message) (*Message, e
 
 func (r *messageRepository) Delete(id int) error {
 	return r.db.Delete(&Message{}, id).Error
+}
+
+func (Message *Message) ToModel() model.Message {
+	return model.Message{
+		ID:           Message.ID,
+		IDUser:       Message.IDUser,
+		IDDiscussion: Message.IDDiscussion,
+		Content:      Message.Content,
+	}
 }

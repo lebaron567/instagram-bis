@@ -1,3 +1,4 @@
+// filepath: /c:/Users/emeri/Documents/cour ynov/zpi/D-veloppement-d-API/instagram-bis/pkg/user/controller.go
 package user
 
 import (
@@ -7,8 +8,8 @@ import (
 
 	"instagram-bis/config"
 	"instagram-bis/database/dbmodel"
-	"golang.org/x/crypto/bcrypt"
 
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -21,6 +22,25 @@ func HashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+// RegisterUser godoc
+// @Summary Register a new user
+// @Description Register a new user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body dbmodel.User true "User"
+// @Success 201 {object} dbmodel.User
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to register user"
+// @Router /users/register [post]
 func RegisterUser(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user dbmodel.User
@@ -41,11 +61,26 @@ func RegisterUser(cfg *config.Config) http.HandlerFunc {
 			return
 		}
 
+		reponse := dbmodel.User{
+			LastName:  user.LastName,
+			FirstName: user.FirstName,
+			Email:     user.Email,
+			Pseudo:    user.Pseudo,
+			Birthdate: user.Birthdate,
+		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(user)
+		json.NewEncoder(w).Encode(reponse)
 	}
 }
 
+// LoginUser godoc
+// @Summary Log in a user
+// @Description Log in a user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /users/login [post]
 func LoginUser(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -53,6 +88,16 @@ func LoginUser(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
+// GetUserProfile godoc
+// @Summary Get a user profile by ID
+// @Description Get a user profile by ID
+// @Tags users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} dbmodel.User
+// @Failure 400 {string} string "Invalid user ID"
+// @Failure 404 {string} string "User not found"
+// @Router /users/{id} [get]
 func GetUserProfile(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -72,6 +117,18 @@ func GetUserProfile(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
+// UpdateUserProfile godoc
+// @Summary Update a user profile
+// @Description Update a user profile
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param user body dbmodel.User true "User"
+// @Success 200 {object} dbmodel.User
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to update user profile"
+// @Router /users/{id} [put]
 func UpdateUserProfile(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -97,6 +154,16 @@ func UpdateUserProfile(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
+// FollowUser godoc
+// @Summary Follow a user
+// @Description Follow a user
+// @Tags users
+// @Param id path int true "User ID"
+// @Param Current-User-ID header int true "Current User ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Invalid user ID or current user ID"
+// @Failure 500 {string} string "Failed to follow user"
+// @Router /users/{id}/follow [post]
 func FollowUser(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Récupérer l'ID de l'utilisateur à suivre
@@ -135,6 +202,16 @@ func FollowUser(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
+// GetFollowers godoc
+// @Summary Get followers of a user
+// @Description Get followers of a user
+// @Tags users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {array} dbmodel.Follower
+// @Failure 400 {string} string "Invalid user ID"
+// @Failure 500 {string} string "Failed to get followers"
+// @Router /users/{id}/followers [get]
 func GetFollowers(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Implémentation pour obtenir la liste des abonnés
@@ -155,6 +232,16 @@ func GetFollowers(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
+// GetFollowing godoc
+// @Summary Get users followed by a user
+// @Description Get users followed by a user
+// @Tags users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {array} dbmodel.Follower
+// @Failure 400 {string} string "Invalid user ID"
+// @Failure 500 {string} string "Failed to get following"
+// @Router /users/{id}/following [get]
 func GetFollowing(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Implémentation pour obtenir la liste des abonnements

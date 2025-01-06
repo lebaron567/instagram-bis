@@ -1,3 +1,4 @@
+// filepath: /c:/Users/emeri/Documents/cour ynov/zpi/D-veloppement-d-API/instagram-bis/pkg/messagerie/controller.go
 package messagerie
 
 import (
@@ -7,12 +8,23 @@ import (
 
 	"instagram-bis/config"
 	"instagram-bis/database/dbmodel"
+	model "instagram-bis/pkg/models"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// CreateMessage crée un nouveau message
-func CreateMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+// CreateMessage godoc
+// @Summary Create a new message
+// @Description Create a new message
+// @Tags messages
+// @Accept json
+// @Produce json
+// @Param message body dbmodel.Message true "Message"
+// @Success 201 {object} dbmodel.Message
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to create message"
+// @Router /messages [post]
+func CreateMessage(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var msg dbmodel.Message
 		if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
@@ -25,13 +37,28 @@ func CreateMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) 
 			return
 		}
 
+		response := model.Message{
+			ID:           msg.ID,
+			IDDiscussion: msg.IDDiscussion,
+			IDUser:       msg.IDUser,
+			Content:      msg.Content,
+		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(msg)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
-// GetMessagesByDiscussion récupère les messages liés à une discussion
-func GetMessagesByDiscussion(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+// GetMessagesByDiscussion godoc
+// @Summary Get messages by discussion ID
+// @Description Get messages by discussion ID
+// @Tags messages
+// @Produce json
+// @Param id path int true "Discussion ID"
+// @Success 200 {array} dbmodel.Message
+// @Failure 400 {string} string "Invalid discussion ID"
+// @Failure 500 {string} string "Failed to retrieve messages"
+// @Router /discussions/{id}/messages [get]
+func GetMessagesByDiscussion(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		discussionID, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -50,8 +77,19 @@ func GetMessagesByDiscussion(cfg *config.Config) func(http.ResponseWriter, *http
 	}
 }
 
-// UpdateMessage met à jour un message existant
-func UpdateMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+// UpdateMessage godoc
+// @Summary Update a message
+// @Description Update a message
+// @Tags messages
+// @Accept json
+// @Produce json
+// @Param id path int true "Message ID"
+// @Param message body dbmodel.Message true "Message"
+// @Success 200 {object} dbmodel.Message
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to update message"
+// @Router /messages/{id} [put]
+func UpdateMessage(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		messageID, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -59,25 +97,34 @@ func UpdateMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) 
 			return
 		}
 
-		var updatedMessage dbmodel.Message
-		if err := json.NewDecoder(r.Body).Decode(&updatedMessage); err != nil {
+		var updatedMsg dbmodel.Message
+		if err := json.NewDecoder(r.Body).Decode(&updatedMsg); err != nil {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 
-		updatedMsg, err := cfg.MessageRepository.Update(messageID, &updatedMessage) // Utilisation de la méthode Update avec l'ID
+		updatedMsgPtr, err := cfg.MessageRepository.Update(messageID, &updatedMsg)
 		if err != nil {
 			http.Error(w, "Failed to update message", http.StatusInternalServerError)
 			return
 		}
+		updatedMsg = *updatedMsgPtr
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(updatedMsg) // Retourner le message mis à jour
+		json.NewEncoder(w).Encode(updatedMsg)
 	}
 }
 
-// DeleteMessage supprime un message
-func DeleteMessage(cfg *config.Config) func(http.ResponseWriter, *http.Request) {
+// DeleteMessage godoc
+// @Summary Delete a message by ID
+// @Description Delete a message by ID
+// @Tags messages
+// @Param id path int true "Message ID"
+// @Success 204
+// @Failure 400 {string} string "Invalid message ID"
+// @Failure 500 {string} string "Failed to delete message"
+// @Router /messages/{id} [delete]
+func DeleteMessage(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		messageID, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
