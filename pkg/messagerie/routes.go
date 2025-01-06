@@ -7,9 +7,11 @@ import (
 )
 
 // RegisterRoutes enregistre les routes du message
-func RegisterRoutes(r chi.Router, cfg *config.Config) {
+func RegisterRoutes(cfg *config.Config) chi.Router {
+	r := chi.NewRouter()
 	r.Post("/messages", CreateMessage(cfg))                          // Créer un message
 	r.Get("/messages/discussion/{id}", GetMessagesByDiscussion(cfg)) // Récupérer les messages d'une discussion
 	r.Put("/messages/{id}", UpdateMessage(cfg))                      // Mettre à jour un message
 	r.Delete("/messages/{id}", DeleteMessage(cfg))                   // Supprimer un message
+	return r
 }
