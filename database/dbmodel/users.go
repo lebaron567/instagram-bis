@@ -7,6 +7,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/driver/sqlite"
 )
 
 type User struct {
@@ -46,6 +48,15 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Create(user *User) (*User, error) {
+	if user.Password != "" {
+		hashed, err := dbmodel.HashPassword(user.Password)
+		if err != nil {
+			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+			return
+		}
+		user.Password = hashed
+	}
+	
 	if err := r.db.Create(user).Error; err != nil {
 		return nil, err
 	}

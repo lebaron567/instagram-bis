@@ -29,6 +29,15 @@ func RegisterUser(cfg *config.Config) http.HandlerFunc {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
+		if user.Password != "" {
+			hashed, err := dbmodel.HashPassword(user.Password)
+			if err != nil {
+				http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+				return
+			}
+			user.Password = hashed
+		}
+		
 
 		if _, err := cfg.UserRepository.Create(&user); err != nil {
 			http.Error(w, "Failed to register user", http.StatusInternalServerError)
