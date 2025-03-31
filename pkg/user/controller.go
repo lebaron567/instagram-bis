@@ -236,3 +236,26 @@ func GetFollowing(cfg *config.Config) http.HandlerFunc {
 		json.NewEncoder(w).Encode(following)
 	}
 }
+
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description Retrieve a list of all users
+// @Tags users
+// @Produce json
+// @Success 200 {array} dbmodel.User
+// @Failure 500 {string} string "Failed to retrieve users"
+// @Router /users [get]
+func GetAllUsers(cfg *config.Config) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // Récupérer tous les utilisateurs depuis le dépôt
+        users, err := cfg.UserRepository.FindAll()
+        if err != nil {
+            http.Error(w, "Failed to retrieve users", http.StatusInternalServerError)
+            return
+        }
+
+        // Retourner la liste des utilisateurs
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(users)
+    }
+}

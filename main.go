@@ -15,6 +15,8 @@ import (
 	"instagram-bis/pkg/post"
 	"instagram-bis/pkg/user"
 
+	"github.com/go-chi/cors"
+
 	_ "instagram-bis/docs" // Importez les docs générées par Swag
 
 	"github.com/go-chi/chi/v5"
@@ -43,6 +45,15 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"}, // 🔒 à restreindre en prod (ex: "http://localhost:3000")
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "User-ID", "Current-User-ID"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
 	r.Use(middleware.Recoverer)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
@@ -54,6 +65,7 @@ func main() {
 		r.Mount("/discussions", conversation.RegisterRoutes(cfg))
 		r.Mount("/messages", messagerie.RegisterRoutes(cfg))
 		r.Mount("/posts", post.Routes(cfg))
+		r.Get("/users", user.GetAllUsers(cfg))
 	})
 
 	r.Group(func(r chi.Router) {
