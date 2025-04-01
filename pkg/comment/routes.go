@@ -8,8 +8,8 @@ import (
 func Routes(cfg *config.Config) chi.Router  {
     r := chi.NewRouter()
 
-    r.Post("/posts/{id}/comments", AddComment(cfg))
-    r.Get("/posts/{id}/comments", GetComments(cfg))
+    r.Post("/{id}/comments", AddComment(cfg))
+    r.Get("/{id}/comments", GetComments(cfg))
     r.Delete("/{id}", DeleteComment(cfg))
 	return r
 }

@@ -45,11 +45,16 @@ func (r *postRepository) Create(post *Post) (*Post, error) {
 
 func (r *postRepository) FindAll() ([]*Post, error) {
 	var posts []*Post
-	if err := r.db.Find(&posts).Error; err != nil {
+	if err := r.db.
+		Preload("User").
+		Preload("Likes").
+		Preload("Comments").
+		Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
 }
+
 
 func (r *postRepository) FindByID(id int) (*Post, error) {
 	var post Post
