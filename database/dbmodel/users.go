@@ -11,15 +11,15 @@ import (
 
 type User struct {
 	gorm.Model
-	LastName       string     `json:"lastename_user"`
-	FirstName      string     `json:"firstname_user"`
-	Email          string     `json:"email_user"`
-	Pseudo         string     `json:"pseudo_user"`
-	Birthdate      string     `json:"birthdate"`
-	Password       string     `json:"password_user"`
-	IsPrivate      bool       `json:"isprivate_user"`
-	ProfilePicture string     `json:"profilpicture_user"`
-	WantsNotify    bool       `json:"wantsnotify_user"`
+	LastName       string     `json:"lastename_user" gorm:"column:lastename_user"`
+	FirstName      string     `json:"firstname_user" gorm:"column:firstname_user"`
+	Email          string     `json:"email_user" gorm:"column:email_user"`
+	Pseudo         string     `json:"pseudo_user" gorm:"column:pseudo_user"`
+	Birthdate      string     `json:"birthdate" gorm:"column:birthdate"`
+	Password       string     `json:"password_user" gorm:"column:password_user"`
+	IsPrivate      bool       `json:"isprivate_user" gorm:"column:isprivate_user"`
+	ProfilePicture string     `json:"profilpicture_user" gorm:"column:profilpicture_user"`
+	WantsNotify    bool       `json:"wantsnotify_user" gorm:"column:wantsnotify_user"`
 	Followers      []Follower `gorm:"foreignKey:IDUser;references:ID"`
 	Posts          []Post     `gorm:"foreignKey:IDUser;references:ID"`
 	Likes          []Like     `gorm:"foreignKey:IDUser;references:ID"`
@@ -46,13 +46,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Create(user *User) (*User, error) {
-	if user.Password != "" {
-		hashed, err := HashPassword(user.Password)
-		if err != nil {
-			return nil, err // ← juste retourner l’erreur ici
-		}
-		user.Password = hashed
-	}
+
 
 	if err := r.db.Create(user).Error; err != nil {
 		return nil, err
@@ -127,7 +121,7 @@ func (r *userRepository) Delete(userID int) error {
 // FindPasswordByEmail retourne le mot de passe d'un utilisateur à partir de son email
 func (r *userRepository) FindPasswordByEmail(email string) (string, error) {
 	var user User
-	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.Where("email_user = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", errors.New("user not found")
 		}
@@ -160,7 +154,7 @@ func HashPassword(password string) (string, error) {
 
 func (r *userRepository) FindByEmail(email string) (*User, error) {
 	var user User
-	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.Where("email_user = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")
 		}

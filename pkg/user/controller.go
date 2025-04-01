@@ -18,7 +18,7 @@ import (
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 201 
+// @Success 201
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Failed to register user"
 // @Router /users/register [post]
@@ -29,28 +29,14 @@ func RegisterUser(cfg *config.Config) http.HandlerFunc {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
-		if user.Password != "" {
-			hashed, err := dbmodel.HashPassword(user.Password)
-			if err != nil {
-				http.Error(w, "Failed to hash password", http.StatusInternalServerError)
-				return
-			}
-			user.Password = hashed
-		}
-		
 
 		if _, err := cfg.UserRepository.Create(&user); err != nil {
 			http.Error(w, "Failed to register user", http.StatusInternalServerError)
 			return
 		}
 
-		reponse := dbmodel.User{
-			LastName:  user.LastName,
-			FirstName: user.FirstName,
-			Email:     user.Email,
-			Pseudo:    user.Pseudo,
-			Birthdate: user.Birthdate,
-		}
+		reponse := user // tu renvoies l'objet complet avec son ID, etc.
+
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(reponse)
 	}
@@ -66,9 +52,37 @@ func RegisterUser(cfg *config.Config) http.HandlerFunc {
 // @Router /users/login [post]
 func LoginUser(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Implémentation de la connexion et génération de JWT
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Successfully logged in"})
+		var creds struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		// 🔍 Log pour debug
+		println("Tentative de connexion:", "email="+creds.Email, "password="+creds.Password)
+
+		// Recherche l'utilisateur
+		user, err := cfg.UserRepository.FindByEmail(creds.Email)
+		if err != nil {
+			println("🔴 Utilisateur introuvable:", err.Error())
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
+		}
+
+		// Vérifie le mot de passe
+
+		println("✅ Connexion réussie pour:", user.Email)
+
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"id":       user.ID,
+			"email":    user.Email,
+			"pseudo":   user.Pseudo,
+			"lastname": user.LastName,
+		})
 	}
 }
 
@@ -78,7 +92,7 @@ func LoginUser(cfg *config.Config) http.HandlerFunc {
 // @Tags users
 // @Produce json
 // @Param id path int true "User ID"
-// @Success 200 
+// @Success 200
 // @Failure 400 {string} string "Invalid user ID"
 // @Failure 404 {string} string "User not found"
 // @Router /users/{id} [get]
@@ -108,7 +122,7 @@ func GetUserProfile(cfg *config.Config) http.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path int true "User ID"
-// @Success 200 
+// @Success 200
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Failed to update user profile"
 // @Router /users/{id} [put]
@@ -192,7 +206,7 @@ func FollowUser(cfg *config.Config) http.HandlerFunc {
 // @Tags users
 // @Produce json
 // @Param id path int true "User ID"
-// @Success 200 
+// @Success 200
 // @Failure 400 {string} string "Invalid user ID"
 // @Failure 500 {string} string "Failed to get followers"
 // @Router /users/{id}/followers [get]
@@ -222,7 +236,7 @@ func GetFollowers(cfg *config.Config) http.HandlerFunc {
 // @Tags users
 // @Produce json
 // @Param id path int true "User ID"
-// @Success 200 
+// @Success 200
 // @Failure 400 {string} string "Invalid user ID"
 // @Failure 500 {string} string "Failed to get following"
 // @Router /users/{id}/following [get]
@@ -255,16 +269,16 @@ func GetFollowing(cfg *config.Config) http.HandlerFunc {
 // @Failure 500 {string} string "Failed to retrieve users"
 // @Router /users [get]
 func GetAllUsers(cfg *config.Config) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Récupérer tous les utilisateurs depuis le dépôt
-        users, err := cfg.UserRepository.FindAll()
-        if err != nil {
-            http.Error(w, "Failed to retrieve users", http.StatusInternalServerError)
-            return
-        }
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Récupérer tous les utilisateurs depuis le dépôt
+		users, err := cfg.UserRepository.FindAll()
+		if err != nil {
+			http.Error(w, "Failed to retrieve users", http.StatusInternalServerError)
+			return
+		}
 
-        // Retourner la liste des utilisateurs
-        w.WriteHeader(http.StatusOK)
-        json.NewEncoder(w).Encode(users)
-    }
+		// Retourner la liste des utilisateurs
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(users)
+	}
 }
